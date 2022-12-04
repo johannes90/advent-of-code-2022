@@ -5,11 +5,8 @@
 #include <string>
 #include <algorithm>
 #include <numeric>
-#include <cassert>
 #include <set>
-#include <map>
 #include <cstring>
-#include <tuple>
 
 
 const std::string INPUT = "day3_data.txt";
@@ -17,7 +14,6 @@ const std::string TEST_INPUT = "day3_testdata.txt";
 
 int compute_priority(char item){
     const std::string lookup = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    assert(lookup.size() == 52);
 
     return (lookup.find(item) + 1); 
 }
@@ -114,19 +110,10 @@ int main() {
     std::vector<std::string> contents = parse_input(INPUT);
 
     // Part 1
-    int score_part1 = compute_part1(contents);
+    std::cout << "solution part 1:" << compute_part1(contents) << std::endl;
     
-    int score_part2 = compute_part2(contents);
-
     // Part 2
-    std::set<char> set1 = {'a', 'b', 'c'};
-    std::set<char> set2 = {'b', 'd', 'c', 'e', 'f', 'g'};
-    std::set<char> set3 = {'b', 'z', 'g'};
-
-    std::set<char> intersect;
-    set_intersection(set1.begin(), set1.end(), set2.begin(), set2.end(),
-                 std::inserter(intersect, intersect.begin()));
-    
+    std::cout << "solution part 2:" << compute_part2(contents) << std::endl;
 
     return 0;
 }
