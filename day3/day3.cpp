@@ -89,6 +89,7 @@ int compute_part2(std::vector<std::string> contents){
         std::set ruck3 = string_to_set(*std::next(it, -2));
 
         // compute intersection
+        // TODO: cleaner way for intersections?
         std::set<char> intersect;
         std::set<char> intersect2;
         set_intersection(ruck1.begin(), ruck1.end(), ruck2.begin(), ruck2.end(),
