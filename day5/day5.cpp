@@ -21,20 +21,16 @@ struct Instruction {
     int destination;
 };
 
-
 // a single crate is just a capital letter -> char
 typedef std::vector<std::tuple<int, int, int>> Instructions;
 //TODO: num_stacks is variable
-// do parsing in two steps
-const int num_stacks = 3;
-typedef std::array<std::vector<std::string>,3> Stacks;
-
+const int num_stacks = 9;
+typedef std::array<std::vector<std::string>, num_stacks> Stacks;
 
 std::pair<Instructions, Stacks>  parse_input(std::string input_path){
 
     std::ifstream inputfile;
     inputfile.open(input_path, std::ios::in);
-
 
     if (!inputfile) { 
         std::cout << "Can't read input" << std::endl;
@@ -97,10 +93,10 @@ std::pair<Instructions, Stacks>  parse_input(std::string input_path){
     // extract instructions
     Instructions instructions;
     for(auto &line : raw_chunk2) {
-        std::string quantity = line.substr(line.find("move ") + 5, 1); 
+        std::string quantity = line.substr(line.find("move ") + 5, 2); 
         std::string source = line.substr(line.find("from ") + 5, 1);
         std::string destination = line.substr(line.find("to ") + 3, 1);
-        int quantity_int = quantity[0] - '0';
+        int quantity_int = std::stoi(quantity); //[0] - '0';
         int source_int = source[0] - '0';
         int destination_int = destination[0] - '0';
         instructions.push_back(std::make_tuple(quantity_int, source_int, destination_int));
@@ -110,14 +106,52 @@ std::pair<Instructions, Stacks>  parse_input(std::string input_path){
     return {instructions, stacks};
 }
 
-
 int main() {
 
     // Parse input
     //auto [instructions, stacks] = 
     Instructions instructions;
     Stacks stacks;
-    std::tie(instructions, stacks) = parse_input(TEST_INPUT);
+    std::tie(instructions, stacks) = parse_input(INPUT);
+
+    // execute all instructions
+    for(auto &instruction : instructions) {
+
+        int quantity = std::get<0>(instruction);
+        int source = std::get<1>(instruction)-1;
+        int destination = std::get<2>(instruction)-1;
+        
+        std::cout << "move " << quantity << " from " << source+1 << " to " << destination+1 << std::endl;
+        // debug output: print stacks
+        int stacknum=0;
+        for(auto stack : stacks){
+            stacknum++;     
+            std::cout << stacknum << ": ";
+            for(auto crate : stack) {
+                std::cout << crate << " ";
+            }
+            std::cout <<std::endl;
+        }
+        std::cout << "\n\n" << std::endl;
+        
+        // move crates from source to destination
+        std::vector<std::string> crate;
+        for(int i = 0; i < quantity; i++) {
+
+            crate.push_back(stacks[source].back());
+            stacks[source].pop_back();
+        }
+        //reverse order of crate
+        // TODO: comment out for part 1:
+        std::reverse(crate.begin(), crate.end()); 
+        //insert crate into stacks[destination]
+        stacks[destination].insert(stacks[destination].end(), crate.begin(), crate.end());
+        
+    }
+    // solution = crates on top of each stack 
+    for(int i = 0; i < num_stacks; i++) {
+        std::cout << "Solution: " << stacks[i].back() << std::endl;
+    }
 
     return 0;
 }
