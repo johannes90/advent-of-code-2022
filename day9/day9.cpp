@@ -1,21 +1,13 @@
 #include <iostream>
-#include <fstream>
-#include <list>
 #include <vector>
 #include <string>
-#include <numeric>
-#include <set>
-#include <cstring>
-#include <sstream>
-#include <ranges>
-#include <algorithm>
 #include <unordered_map>
 #include <unordered_set>
-#include <fstream>
 #include <bits/stdc++.h>
 
 const std::string INPUT = "day9_data.txt";
 const std::string TEST_INPUT = "day9_testdata.txt";
+const std::string TEST_INPUT2 = "day9_testdata2.txt";
 
 std::vector<std::string> parse_input(std::string input_path){
 
@@ -49,31 +41,19 @@ class Point2D{
         this->x = x;
         this->y = y;
     }
-    // overload the equality operator (unordered set needs it)
+
     bool operator==(const Point2D& other) const
     {
         return x == other.x && y == other.y;
     }
-
-
+    
     Point2D operator-(const Point2D& other) const{
         return Point2D(this->x - other.x, this->y - other.y);
     }
+    
     Point2D operator+(const Point2D& other) const{
         return Point2D(this->x + other.x, this->y + other.y);
     }
-    Point2D distance(const Point2D& other) const{
-        return Point2D(std::abs(this->x - other.x), std::abs(this->y - other.y));
-    }
-
-    Point2D operator*(int multiplier) const{
-        return Point2D(multiplier * this->x, multiplier * this->y);
-    }
-
-    //friend Point2D operator*(int multiplier, const Point2D) const{
-    //    return point*multiplier;
-    //}
-
 
 };
 
@@ -91,14 +71,52 @@ public:
     }
 };
 
+// map directions to vectors
+std::unordered_map<char, Point2D> direction_map = {
+    {'R', Point2D(1,0)},
+    {'L', Point2D(-1,0)},
+    {'U', Point2D(0,1)},
+    {'D', Point2D(0,-1)}
+};
+
+Point2D rope_tail_dynamics(Point2D head, Point2D tail){
+
+    auto vector_head_tail = head - tail;
+    if(std::abs(vector_head_tail.x) <= 1 && std::abs(vector_head_tail.y) <= 1){
+        return tail;
+    }
+
+    if (head.y == tail.y)
+		{
+			return Point2D(head.x > tail.x ? head.x - 1 : head.x + 1, tail.y );
+		}
+		else if (head.x == tail.x)
+		{
+			return Point2D( tail.x, head.y > tail.y ? head.y - 1 : head.y + 1 );
+		}
+		else
+		{
+			return Point2D
+			(
+				head.x > tail.x ? tail.x + 1 : tail.x - 1,
+				head.y > tail.y ? tail.y + 1 : tail.y - 1
+            );
+		}
+}
+
 int main() {
 
     // Parse input
-    auto instructions = parse_input(TEST_INPUT);
+    auto instructions = parse_input(INPUT);
 
-    // the snake starts at (0,0)
-    Point2D head = Point2D(0,0);
-    Point2D tail = Point2D(0,0);
+    //part 1:
+    const int num_knots = 2;
+    //part 2:
+    //const int num_knots = 10;
+
+    auto knots = std::array<Point2D, num_knots>{};
+    auto& head = knots[0];
+    auto& tail = knots[knots.size()-1];
     std::unordered_set<Point2D, Point2DHash> tailvisited;
     tailvisited.insert(tail);
 
@@ -107,56 +125,25 @@ int main() {
         auto direction = instruction[0];
         int distance = std::stoi(instruction.substr(2));
 
-        auto step_dir = Point2D(0,0);
-        auto step = Point2D(0,0);
-        switch(direction){
-            case 'R':
-                step_dir = Point2D(1,0);
-                step = step_dir * distance;
-                break;
-            case 'L':
-                step_dir = Point2D(-1,0);
-                step = step_dir * distance;
-                break;
-            case 'U':
-                step_dir = Point2D(0,1);
-                step = step_dir * distance;
-                break;
-            case 'D':
-                step_dir = Point2D(0,-1);
-                step = step_dir * distance;
-                break;
+        // determine the step vector for head movement
+        auto step = direction_map[direction];
+
+        // move the head distance times with step vector
+        for(int j = 0; j< distance; j++){
+            
+            head = head + step;
+
+            // movement of the tail knots
+            for(int i = 0; i < knots.size()-1; i++){
+
+                // rope dynamics
+                knots[i+1] = rope_tail_dynamics(knots[i], knots[i+1]);
+            }
+            tailvisited.insert(tail);  
         }
-
-        // move the head
-        head = head + step;
-
-        // if th head i on an adjacent square to the tail do nothing
-        auto head_tail_diff = head.distance(tail);
-        if(head_tail_diff.x <= 1 && head_tail_diff.y <= 1){
-            continue;
-        }
-        else
-        {
-            // move the tail
-            tail = head - step_dir;
-        }
-
-        // save new visited tail position
-        tailvisited.insert(tail);
-
     }
 
-
-
-
-   
-    auto solution_part1 = tailvisited.size();
-    auto solution_part2 = 0;
-    std::cout << "solution part 1 (number visible trees):  " << solution_part1 << std::endl;
-    std::cout << "solution part 2 (highest scenic score):  " << solution_part2 << std::endl;
-
+    // solution part 1 and 2
+    std::cout << "visited places by tail: " << tailvisited.size() << std::endl;
     return 0;
 }
-
-
