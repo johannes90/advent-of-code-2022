@@ -27,41 +27,42 @@ std::vector<std::string> parse_input(std::string input_path){
     return lines;
 }
 
-class Point2D{
+class Vector2d{
 
     public:
     int x;
     int y;
 
-    Point2D(){
+    public:
+    Vector2d(){
         this->x = 0;
         this->y = 0;
     }
-    Point2D(int x, int y){
+    Vector2d(int x, int y){
         this->x = x;
         this->y = y;
     }
 
-    bool operator==(const Point2D& other) const
+    bool operator==(const Vector2d& other) const
     {
         return x == other.x && y == other.y;
     }
     
-    Point2D operator-(const Point2D& other) const{
-        return Point2D(this->x - other.x, this->y - other.y);
+    Vector2d operator-(const Vector2d& other) const{
+        return Vector2d(this->x - other.x, this->y - other.y);
     }
     
-    Point2D operator+(const Point2D& other) const{
-        return Point2D(this->x + other.x, this->y + other.y);
+    Vector2d operator+(const Vector2d& other) const{
+        return Vector2d(this->x + other.x, this->y + other.y);
     }
 
 };
 
-// we need a hash function for the Point2D class
-class Point2DHash
+// we need a hash function for the Vector2d class
+class Vector2dHash
 {
 public:
-    std::size_t operator()(const Point2D& p) const
+    std::size_t operator()(const Vector2d& p) const
     {
         // hash the x and y values separately and combine them using
         // a bitwise XOR operation
@@ -72,14 +73,14 @@ public:
 };
 
 // map directions to vectors
-std::unordered_map<char, Point2D> direction_map = {
-    {'R', Point2D(1,0)},
-    {'L', Point2D(-1,0)},
-    {'U', Point2D(0,1)},
-    {'D', Point2D(0,-1)}
+std::unordered_map<char, Vector2d> direction_map = {
+    {'R', Vector2d(1,0)},
+    {'L', Vector2d(-1,0)},
+    {'U', Vector2d(0,1)},
+    {'D', Vector2d(0,-1)}
 };
 
-Point2D rope_tail_dynamics(Point2D head, Point2D tail){
+Vector2d rope_tail_dynamics(Vector2d head, Vector2d tail){
 
     auto vector_head_tail = head - tail;
     if(std::abs(vector_head_tail.x) <= 1 && std::abs(vector_head_tail.y) <= 1){
@@ -88,15 +89,15 @@ Point2D rope_tail_dynamics(Point2D head, Point2D tail){
 
     if (head.y == tail.y)
 		{
-			return Point2D(head.x > tail.x ? head.x - 1 : head.x + 1, tail.y );
+			return Vector2d(head.x > tail.x ? head.x - 1 : head.x + 1, tail.y );
 		}
 		else if (head.x == tail.x)
 		{
-			return Point2D( tail.x, head.y > tail.y ? head.y - 1 : head.y + 1 );
+			return Vector2d( tail.x, head.y > tail.y ? head.y - 1 : head.y + 1 );
 		}
 		else
 		{
-			return Point2D
+			return Vector2d
 			(
 				head.x > tail.x ? tail.x + 1 : tail.x - 1,
 				head.y > tail.y ? tail.y + 1 : tail.y - 1
@@ -114,10 +115,10 @@ int main() {
     //part 2:
     //const int num_knots = 10;
 
-    auto knots = std::array<Point2D, num_knots>{};
+    auto knots = std::array<Vector2d, num_knots>{};
     auto& head = knots[0];
     auto& tail = knots[knots.size()-1];
-    std::unordered_set<Point2D, Point2DHash> tailvisited;
+    std::unordered_set<Vector2d, Vector2dHash> tailvisited;
     tailvisited.insert(tail);
 
     for(auto instruction : instructions){
